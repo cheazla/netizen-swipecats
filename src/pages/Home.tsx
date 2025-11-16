@@ -3,7 +3,57 @@ import React, { useEffect, useState } from "react";
 interface Cat {
   id: number;
   url: string;
+  name: string;
+  age: number;
+  verified: boolean;
+  hobbies: string[];
 }
+
+const names = [
+  "Comot",
+  "Tompok",
+  "Comel",
+  "Gebu",
+  "Manja",
+  "Leka",
+  "Montel",
+  "Ciki",
+  "Lilo",
+  "Boboi",
+  "Mimi",
+  "Ayam",
+  "Ciko",
+  "Jojo",
+  "Totoy",
+];
+
+const hobbiesList = [
+  "Drinks",
+  "Sleeping",
+  "Playing",
+  "Cuddling",
+  "Running",
+  "Eating",
+  "Chasing",
+  "Stealing hearts",
+  "Midnight zoomies",
+  "Window staring",
+  "Purring therapy",
+  "Flirting with strangers",
+  "Ignoring texts",
+  "Being mysterious",
+  "Making biscuits",
+  "Ghosting then cuddling",
+  "Pretending to help code",
+];
+
+const randomName = () => names[Math.floor(Math.random() * names.length)];
+const randomAge = () => Math.floor(Math.random() * 10) + 1;
+const randomVerified = () => Math.random() < 0.5;
+const randomHobbies = () => {
+  const shuffled = hobbiesList.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 3);
+};
 
 const fetchCats = async (limit: number = 10): Promise<Cat[]> => {
   const cats: Cat[] = [];
@@ -11,6 +61,10 @@ const fetchCats = async (limit: number = 10): Promise<Cat[]> => {
     cats.push({
       id: i + 1,
       url: `https://cataas.com/cat?${Date.now()}-${i}`,
+      name: randomName(),
+      age: randomAge(),
+      verified: randomVerified(),
+      hobbies: randomHobbies(),
     });
   }
   return cats;
@@ -145,7 +199,46 @@ const Home: React.FC = () => {
                     <img src={cat.url} style={styles.cardImg} alt="Cat" />
                     <div style={styles.cardOverlay}>
                       <div style={styles.cardInfo}>
-                        <span style={styles.catNumber}>Cat #{cat.id}</span>
+                        <span style={styles.catNumber}>
+                          {cat.name}, {cat.age}
+                          {cat.verified && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              style={{
+                                backgroundColor: "#00BFFF",
+                                borderRadius: "50%",
+                                marginLeft: 6,
+                                verticalAlign: "middle",
+                              }}
+                            >
+                              <circle cx="12" cy="12" r="10" fill="#00BFFF" />
+                              <polyline points="9 12 11 14 15 10" />
+                            </svg>
+                          )}
+                        </span>
+
+                        <span
+                          style={{
+                            fontSize: "clamp(12px, 3vw, 14px)",
+                            color: "white",
+                            marginTop: 2,
+                          }}
+                        ></span>
+                        <div style={styles.hobbiesContainer}>
+                          {cat.hobbies.map((hobby, idx) => (
+                            <span key={idx} style={styles.hobbyBubble}>
+                              {hobby}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
@@ -515,5 +608,23 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
     boxShadow: "0 8px 24px rgba(102, 126, 234, 0.4)",
+  },
+
+  hobbiesContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+    marginTop: "6px",
+  },
+  hobbyBubble: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    color: "white",
+    padding: "4px 10px",
+    borderRadius: "16px",
+    fontSize: "12px",
+    fontWeight: 500,
+    textAlign: "center",
+    whiteSpace: "nowrap",
+    backdropFilter: "blur(6px)",
   },
 };
