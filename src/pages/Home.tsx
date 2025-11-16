@@ -139,7 +139,9 @@ const Home: React.FC = () => {
     setIndex((prev) => prev + 1);
   };
 
-  const restart = () => {
+  const restart = async () => {
+    const newCats = await fetchCats(10);
+    setCats(newCats);
     setIndex(0);
     setLiked([]);
   };
