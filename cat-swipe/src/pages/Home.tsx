@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-// -------------------- Types --------------------
 interface Cat {
   id: number;
   url: string;
 }
 
-// -------------------- API --------------------
 const fetchCats = async (limit: number = 10): Promise<Cat[]> => {
   const cats: Cat[] = [];
   for (let i = 0; i < limit; i++) {
@@ -18,7 +16,6 @@ const fetchCats = async (limit: number = 10): Promise<Cat[]> => {
   return cats;
 };
 
-// -------------------- Main Component --------------------
 const Home: React.FC = () => {
   const [cats, setCats] = useState<Cat[]>([]);
   const [index, setIndex] = useState(0);
@@ -40,7 +37,6 @@ const Home: React.FC = () => {
   const remainingCats = cats.slice(index);
   const finished = remainingCats.length === 0;
 
-  // ---------------- Drag Handlers ----------------
   const handleDragStart = (x: number, y: number) => {
     setDrag({ x: 0, y: 0, startX: x, startY: y, isDragging: true });
   };
@@ -57,7 +53,6 @@ const Home: React.FC = () => {
     setDrag({ x: 0, y: 0, startX: 0, startY: 0, isDragging: false });
   };
 
-  // ---------------- Swipe Actions ----------------
   const swipeRight = () => {
     const current = remainingCats[0];
     if (current) setLiked([...liked, current]);
@@ -73,12 +68,10 @@ const Home: React.FC = () => {
     setLiked([]);
   };
 
-  // ---------------- Render ----------------
   return (
     <div style={styles.container}>
       <div style={styles.backgroundGradient}></div>
 
-      {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerGlass}>
           <h1 style={styles.title}>Pawsitive</h1>
@@ -156,7 +149,6 @@ const Home: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Swipe Indicators */}
                     {isTop && drag.isDragging && (
                       <>
                         <div
@@ -188,7 +180,6 @@ const Home: React.FC = () => {
               })}
           </div>
 
-          {/* Action Buttons */}
           <div style={styles.actions}>
             <button
               style={{ ...styles.actionBtn, ...styles.passBtn }}
@@ -211,17 +202,17 @@ const Home: React.FC = () => {
               onClick={swipeRight}
             >
               <svg
-                width="28"
-                height="28"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="currentColor"
+                strokeWidth="2.5"
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
             </button>
           </div>
 
-          {/* Progress Indicator */}
           <div style={styles.progress}>
             <div
               style={{
@@ -273,7 +264,6 @@ const Home: React.FC = () => {
 
 export default Home;
 
-// -------------------- Styles --------------------
 const styles: Record<string, React.CSSProperties> = {
   container: {
     display: "flex",
@@ -282,7 +272,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: "100vh",
     fontFamily:
       "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    background: "linear-gradient(135deg, #000 0%, #fff 100%)",
     position: "relative",
     overflow: "hidden",
   },
@@ -297,7 +287,7 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 0,
   },
   header: {
-    width: "100%",
+    width: "90%",
     padding: "20px",
     zIndex: 10,
   },
@@ -467,18 +457,18 @@ const styles: Record<string, React.CSSProperties> = {
     width: "100%",
   },
   summaryIcon: {
-    fontSize: "clamp(48px, 10vw, 64px)",
+    fontSize: "clamp(38px, 10vw, 54px)",
     marginBottom: "clamp(12px, 3vh, 16px)",
   },
   summaryTitle: {
     margin: "0 0 12px",
-    fontSize: "clamp(24px, 6vw, 32px)",
+    fontSize: "clamp(20px, 6vw, 28px)",
     fontWeight: "700",
     color: "#2d3436",
     letterSpacing: "-0.5px",
   },
   summaryText: {
-    margin: "0 0 clamp(20px, 4vh, 32px)",
+    margin: "0 0 clamp(18px, 4vh, 30px)",
     fontSize: "clamp(16px, 3.5vw, 18px)",
     color: "#636e72",
     fontWeight: "500",
@@ -490,14 +480,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   likedGrid: {
     display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fill, minmax(clamp(100px, 20vw, 120px), 1fr))",
+    gridTemplateColumns: "repeat(5, 1fr)",
     gap: "clamp(8px, 2vw, 12px)",
     marginBottom: "clamp(20px, 4vh, 32px)",
-    maxHeight: "min(400px, 50vh)",
+    maxHeight: "min(200px, 50vh)",
     overflowY: "auto",
     padding: "4px",
   },
+
   likedCard: {
     borderRadius: "clamp(12px, 3vw, 20px)",
     overflow: "hidden",
@@ -507,7 +497,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   likedImg: {
     width: "100%",
-    height: "clamp(100px, 20vw, 120px)",
+    height: "clamp(60px, 20vw, 80px)",
     objectFit: "cover",
     display: "block",
   },
