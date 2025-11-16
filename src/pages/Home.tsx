@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 interface Cat {
-  id: number;
+  id: string | number;
   url: string;
   name: string;
   age: number;
@@ -51,7 +51,7 @@ const randomName = () => names[Math.floor(Math.random() * names.length)];
 const randomAge = () => Math.floor(Math.random() * 10) + 1;
 const randomVerified = () => Math.random() < 0.5;
 const randomHobbies = () => {
-  const shuffled = hobbiesList.sort(() => 0.5 - Math.random());
+  const shuffled = [...hobbiesList].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, 3);
 };
 
@@ -59,8 +59,8 @@ const fetchCats = async (limit: number = 10): Promise<Cat[]> => {
   const cats: Cat[] = [];
   for (let i = 0; i < limit; i++) {
     cats.push({
-      id: i + 1,
-      url: `https://cataas.com/cat?${Date.now()}-${i}`,
+      id: crypto.randomUUID(),
+      url: `https://cataas.com/cat?${crypto.randomUUID()}`,
       name: randomName(),
       age: randomAge(),
       verified: randomVerified(),
@@ -82,10 +82,25 @@ const Home: React.FC = () => {
     isDragging: false,
   });
 
+  const preloadImages = (cats: Cat[]) => {
+    cats.forEach((cat) => {
+      const img = new Image();
+      img.src = cat.url;
+    });
+  };
+
+  useEffect(() => {
+    const nextCats = cats.slice(index, index + 3);
+    preloadImages(nextCats);
+  }, [index, cats]);
+
   const SWIPE_THRESHOLD = 100;
 
   useEffect(() => {
-    fetchCats().then(setCats);
+    fetchCats(10).then((cats) => {
+      setCats(cats);
+      preloadImages(cats);
+    });
   }, []);
 
   const remainingCats = cats.slice(index);
@@ -108,13 +123,20 @@ const Home: React.FC = () => {
   };
 
   const swipeRight = () => {
-    const current = remainingCats[0];
-    if (current) setLiked([...liked, current]);
-    setIndex(index + 1);
+    setLiked((prev) => {
+      const currentCat = cats[index];
+      return currentCat ? [...prev, currentCat] : prev;
+    });
+
+    setDrag({ x: 0, y: 0, startX: 0, startY: 0, isDragging: false });
+
+    setIndex((prev) => prev + 1);
   };
 
   const swipeLeft = () => {
-    setIndex(index + 1);
+    setDrag({ x: 0, y: 0, startX: 0, startY: 0, isDragging: false });
+
+    setIndex((prev) => prev + 1);
   };
 
   const restart = () => {
@@ -128,7 +150,7 @@ const Home: React.FC = () => {
 
       <div style={styles.header}>
         <div style={styles.headerGlass}>
-          <h1 style={styles.title}>Pawsitive</h1>
+          <h1 style={styles.title}>MeowMingle</h1>
           <p style={styles.subtitle}>Find your purrfect match</p>
         </div>
       </div>
@@ -136,105 +158,130 @@ const Home: React.FC = () => {
       {!finished ? (
         <div style={styles.content}>
           <div style={styles.deck}>
-            {remainingCats
-              .slice(0, 3)
-              .reverse()
-              .map((cat, idx) => {
-                const isTop = idx === 0;
-                const rotation = drag.x * 0.08;
-                const opacity = 1 - Math.abs(drag.x) / 300;
+            {remainingCats.slice(0, 3).map((cat, idx) => {
+              const isTop = idx === 0;
+              const rotation = isTop ? drag.x * 0.08 : 0;
+              const opacity =
+                isTop && drag.isDragging
+                  ? 1 - Math.abs(drag.x) / 300
+                  : 1 - idx * 0.2;
 
-                const style = isTop
-                  ? {
-                      ...styles.card,
-                      transform: `translate(${drag.x}px, ${drag.y}px) rotate(${rotation}deg)`,
-                      zIndex: 3 - idx,
-                      opacity: drag.isDragging ? opacity : 1,
-                    }
-                  : {
-                      ...styles.card,
-                      transform: `scale(${1 - idx * 0.05}) translateY(${
-                        idx * 12
-                      }px)`,
-                      zIndex: 3 - idx,
-                      opacity: 1 - idx * 0.2,
-                    };
+              const style = isTop
+                ? {
+                    ...styles.card,
+                    transform: `translate(${drag.x}px, ${drag.y}px) rotate(${rotation}deg)`,
+                    zIndex: 3 - idx,
+                    opacity,
+                  }
+                : {
+                    ...styles.card,
+                    transform: `scale(${1 - idx * 0.05}) translateY(${
+                      idx * 12
+                    }px)`,
+                    zIndex: 3 - idx,
+                    opacity,
+                  };
 
-                return (
-                  <div
-                    key={cat.id}
-                    style={style}
-                    onMouseDown={
-                      isTop
-                        ? (e) => handleDragStart(e.clientX, e.clientY)
-                        : undefined
-                    }
-                    onMouseMove={
-                      isTop
-                        ? (e) => handleDragMove(e.clientX, e.clientY)
-                        : undefined
-                    }
-                    onMouseUp={isTop ? handleDragEnd : undefined}
-                    onMouseLeave={isTop ? handleDragEnd : undefined}
-                    onTouchStart={
-                      isTop
-                        ? (e) =>
-                            handleDragStart(
-                              e.touches[0].clientX,
-                              e.touches[0].clientY
-                            )
-                        : undefined
-                    }
-                    onTouchMove={
-                      isTop
-                        ? (e) =>
-                            handleDragMove(
-                              e.touches[0].clientX,
-                              e.touches[0].clientY
-                            )
-                        : undefined
-                    }
-                    onTouchEnd={isTop ? handleDragEnd : undefined}
-                  >
-                    <img src={cat.url} style={styles.cardImg} alt="Cat" />
-                    <div style={styles.cardOverlay}>
-                      <div style={styles.cardInfo}>
-                        <span style={styles.catNumber}>
-                          {cat.name} {cat.age}
-                          {cat.verified && (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              style={{
-                                backgroundColor: "#00BFFF",
-                                borderRadius: "50%",
-                                marginLeft: 6,
-                                verticalAlign: "middle",
-                              }}
-                            >
-                              <circle cx="12" cy="12" r="10" fill="#00BFFF" />
-                              <polyline points="9 12 11 14 15 10" />
-                            </svg>
-                          )}
-                        </span>
+              return (
+                <div
+                  key={cat.id}
+                  style={style}
+                  onMouseDown={
+                    isTop
+                      ? (e) => handleDragStart(e.clientX, e.clientY)
+                      : undefined
+                  }
+                  onMouseMove={
+                    isTop
+                      ? (e) => handleDragMove(e.clientX, e.clientY)
+                      : undefined
+                  }
+                  onMouseUp={isTop ? handleDragEnd : undefined}
+                  onMouseLeave={isTop ? handleDragEnd : undefined}
+                  onTouchStart={
+                    isTop
+                      ? (e) =>
+                          handleDragStart(
+                            e.touches[0].clientX,
+                            e.touches[0].clientY
+                          )
+                      : undefined
+                  }
+                  onTouchMove={
+                    isTop
+                      ? (e) =>
+                          handleDragMove(
+                            e.touches[0].clientX,
+                            e.touches[0].clientY
+                          )
+                      : undefined
+                  }
+                  onTouchEnd={isTop ? handleDragEnd : undefined}
+                >
+                  <img
+                    src={cat.url}
+                    alt="Cat"
+                    style={{
+                      ...styles.cardImg,
+                      filter: "blur(8px)",
+                      transition: "filter 0.3s",
+                    }}
+                    onLoad={(e) => (e.currentTarget.style.filter = "blur(0)")}
+                    loading="eager"
+                  />
 
-                        <span
+                  <div style={styles.cardOverlay}>
+                    <div style={styles.cardInfo}>
+                      <span style={styles.catNumber}>
+                        {cat.name}, {cat.age}
+                        {cat.verified && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                              backgroundColor: "#00BFFF",
+                              borderRadius: "50%",
+                              marginLeft: 6,
+                              verticalAlign: "middle",
+                            }}
+                          >
+                            <circle cx="12" cy="12" r="10" fill="#00BFFF" />
+                            <polyline points="9 12 11 14 15 10" />
+                          </svg>
+                        )}
+                      </span>
+
+                      <div style={styles.hobbiesContainer}>
+                        {cat.hobbies[0] && (
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              width: "100%",
+                            }}
+                          >
+                            <span style={styles.hobbyBubble}>
+                              {cat.hobbies[0]}
+                            </span>
+                          </div>
+                        )}
+
+                        <div
                           style={{
-                            fontSize: "clamp(12px, 3vw, 14px)",
-                            color: "white",
-                            marginTop: 2,
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: "6px",
+                            width: "100%",
                           }}
-                        ></span>
-                        <br></br>
-                        <div style={styles.hobbiesContainer}>
-                          {cat.hobbies.map((hobby, idx) => (
+                        >
+                          {cat.hobbies.slice(1, 3).map((hobby, idx) => (
                             <span key={idx} style={styles.hobbyBubble}>
                               {hobby}
                             </span>
@@ -242,36 +289,36 @@ const Home: React.FC = () => {
                         </div>
                       </div>
                     </div>
-
-                    {isTop && drag.isDragging && (
-                      <>
-                        <div
-                          style={{
-                            ...styles.swipeIndicator,
-                            ...styles.likeIndicator,
-                            opacity:
-                              drag.x > 30 ? Math.min(drag.x / 100, 1) : 0,
-                          }}
-                        >
-                          LIKE
-                        </div>
-                        <div
-                          style={{
-                            ...styles.swipeIndicator,
-                            ...styles.nopeIndicator,
-                            opacity:
-                              drag.x < -30
-                                ? Math.min(Math.abs(drag.x) / 100, 1)
-                                : 0,
-                          }}
-                        >
-                          NOPE
-                        </div>
-                      </>
-                    )}
                   </div>
-                );
-              })}
+
+                  {isTop && drag.isDragging && (
+                    <>
+                      <div
+                        style={{
+                          ...styles.swipeIndicator,
+                          ...styles.likeIndicator,
+                          opacity: drag.x > 30 ? Math.min(drag.x / 100, 1) : 0,
+                        }}
+                      >
+                        LIKE
+                      </div>
+                      <div
+                        style={{
+                          ...styles.swipeIndicator,
+                          ...styles.nopeIndicator,
+                          opacity:
+                            drag.x < -30
+                              ? Math.min(Math.abs(drag.x) / 100, 1)
+                              : 0,
+                        }}
+                      >
+                        NOPE
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <div style={styles.actions}>
@@ -328,7 +375,7 @@ const Home: React.FC = () => {
 
             <div style={styles.likedGrid}>
               {liked.map((cat) => (
-                <div key={cat.id} style={styles.likedCard}>
+                <div key={`${cat.id}-${index}`} style={styles.likedCard}>
                   <img src={cat.url} style={styles.likedImg} alt="Liked cat" />
                 </div>
               ))}
@@ -617,6 +664,7 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "6px",
     marginTop: "6px",
     justifyContent: "flex-end",
+    alignItems: "center",
   },
 
   hobbyBubble: {
@@ -624,10 +672,13 @@ const styles: Record<string, React.CSSProperties> = {
     color: "white",
     padding: "4px 10px",
     borderRadius: "16px",
-    fontSize: "10px",
+    fontSize: "12px",
     fontWeight: 500,
-    textAlign: "left",
+    textAlign: "center",
     whiteSpace: "nowrap",
     backdropFilter: "blur(6px)",
   },
 };
+function preloadImages(cats: Cat[]) {
+  throw new Error("Function not implemented.");
+}
