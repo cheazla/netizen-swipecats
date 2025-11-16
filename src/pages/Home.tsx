@@ -681,6 +681,3 @@ const styles: Record<string, React.CSSProperties> = {
     backdropFilter: "blur(6px)",
   },
 };
-function preloadImages(cats: Cat[]) {
-  throw new Error("Function not implemented.");
-}
