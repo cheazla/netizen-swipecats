@@ -28,23 +28,23 @@ const names = [
 ];
 
 const hobbiesList = [
-  "Drinks",
+  "Drinking",
   "Sleeping",
   "Playing",
   "Cuddling",
   "Running",
   "Eating",
   "Chasing",
-  "Stealing hearts",
-  "Midnight zoomies",
-  "Window staring",
-  "Purring therapy",
-  "Flirting with strangers",
-  "Ignoring texts",
-  "Being mysterious",
-  "Making biscuits",
-  "Ghosting then cuddling",
-  "Pretending to help code",
+  "Flirting",
+  "Zoomies",
+  "Staring",
+  "Purring",
+  "Ghosting",
+  "Biscuits",
+  "Coding",
+  "Lurking",
+  "Snuggling",
+  "Judging",
 ];
 
 const randomName = () => names[Math.floor(Math.random() * names.length)];
@@ -200,7 +200,7 @@ const Home: React.FC = () => {
                     <div style={styles.cardOverlay}>
                       <div style={styles.cardInfo}>
                         <span style={styles.catNumber}>
-                          {cat.name}, {cat.age}
+                          {cat.name} {cat.age}
                           {cat.verified && (
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -232,6 +232,7 @@ const Home: React.FC = () => {
                             marginTop: 2,
                           }}
                         ></span>
+                        <br></br>
                         <div style={styles.hobbiesContainer}>
                           {cat.hobbies.map((hobby, idx) => (
                             <span key={idx} style={styles.hobbyBubble}>
@@ -615,15 +616,17 @@ const styles: Record<string, React.CSSProperties> = {
     flexWrap: "wrap",
     gap: "6px",
     marginTop: "6px",
+    justifyContent: "flex-end",
   },
+
   hobbyBubble: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     color: "white",
     padding: "4px 10px",
     borderRadius: "16px",
-    fontSize: "12px",
+    fontSize: "10px",
     fontWeight: 500,
-    textAlign: "center",
+    textAlign: "left",
     whiteSpace: "nowrap",
     backdropFilter: "blur(6px)",
   },
